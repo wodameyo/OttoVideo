@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.user.mappers.UserFollowMapper">
+
+    <resultMap id="userFollowMap" type="com.otto.user.entity.po.UserFollow">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="followUserId" column="follow_user_id"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="userFollowVOMap" type="com.otto.user.entity.vo.UserFollowVO">
+        <result property="userId" column="other_user_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="personalSign" column="personal_sign"/>
+        <result property="totalFans" column="total_fans"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.id != null">and id = #{query.id}</if>
+            <if test="query.userId != null and query.userId != ''">and user_id = #{query.userId}</if>
+            <if test="query.followUserId != null and query.followUserId != ''">and follow_user_id = #{query.followUserId}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="userFollowMap">
+        select id, user_id, follow_user_id, create_time from user_follow
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from user_follow
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.user.entity.po.UserFollow" useGeneratedKeys="true" keyProperty="id">
+        insert into user_follow (user_id, follow_user_id, create_time)
+        values (#{userId}, #{followUserId}, now())
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.user.entity.po.UserFollow">
+        insert into user_follow (user_id, follow_user_id, create_time)
+        values (#{userId}, #{followUserId}, now())
+        on duplicate key update create_time = now()
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into user_follow (user_id, follow_user_id, create_time) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.followUserId}, now())
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into user_follow (user_id, follow_user_id) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.followUserId})
+        </foreach>
+        on duplicate key update user_id = user_id
+    </insert>
+
+    <update id="updateByParam">
+        update user_follow
+        <set>
+            <if test="bean.userId != null">user_id = #{bean.userId},</if>
+            <if test="bean.followUserId != null">follow_user_id = #{bean.followUserId},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from user_follow
+        <include refid="where_condition"/>
+    </update>
+
+    <!-- 我的关注：other_user_id = follow_user_id -->
+    <select id="selectFollowList" resultMap="userFollowVOMap">
+        select f.follow_user_id as other_user_id, u.nick_name, u.avatar, u.personal_sign,
+               u.total_fans, f.create_time
+        from user_follow f
+        left join user_info u on u.user_id = f.follow_user_id
+        where f.user_id = #{query.userId}
+        <if test="query.nickNameFuzzy != null and query.nickNameFuzzy != ''">
+            and u.nick_name like concat('%', #{query.nickNameFuzzy}, '%')
+        </if>
+        order by f.create_time desc
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectFollowCount" resultType="java.lang.Integer">
+        select count(1) from user_follow f
+        left join user_info u on u.user_id = f.follow_user_id
+        where f.user_id = #{query.userId}
+        <if test="query.nickNameFuzzy != null and query.nickNameFuzzy != ''">
+            and u.nick_name like concat('%', #{query.nickNameFuzzy}, '%')
+        </if>
+    </select>
+
+    <!-- 粉丝列表：other_user_id = user_id（粉丝） -->
+    <select id="selectFansList" resultMap="userFollowVOMap">
+        select f.user_id as other_user_id, u.nick_name, u.avatar, u.personal_sign,
+               u.total_fans, f.create_time
+        from user_follow f
+        left join user_info u on u.user_id = f.user_id
+        where f.follow_user_id = #{query.followUserId}
+        <if test="query.nickNameFuzzy != null and query.nickNameFuzzy != ''">
+            and u.nick_name like concat('%', #{query.nickNameFuzzy}, '%')
+        </if>
+        order by f.create_time desc
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectFansCount" resultType="java.lang.Integer">
+        select count(1) from user_follow f
+        left join user_info u on u.user_id = f.user_id
+        where f.follow_user_id = #{query.followUserId}
+        <if test="query.nickNameFuzzy != null and query.nickNameFuzzy != ''">
+            and u.nick_name like concat('%', #{query.nickNameFuzzy}, '%')
+        </if>
+    </select>
+
+</mapper>

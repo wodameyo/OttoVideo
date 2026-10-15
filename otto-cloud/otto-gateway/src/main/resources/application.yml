@@ -1,0 +1,110 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: otto-gateway
+  config:
+    import:
+      - optional:nacos:otto-gateway.yaml?group=OTTO_GROUP&refreshEnabled=true
+      - optional:nacos:otto-common.yaml?group=OTTO_GROUP&refreshEnabled=true
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        group: OTTO_GROUP
+        file-extension: yaml
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        - id: otto-user
+          uri: lb://otto-user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=2
+        - id: otto-video
+          uri: lb://otto-video-service
+          predicates:
+            - Path=/api/video/**
+          filters:
+            - StripPrefix=2
+        - id: otto-media
+          uri: lb://otto-media-service
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - StripPrefix=2
+        - id: otto-interact
+          uri: lb://otto-interact-service
+          predicates:
+            - Path=/api/interact/**
+          filters:
+            - StripPrefix=2
+        - id: otto-stat
+          uri: lb://otto-stat-service
+          predicates:
+            - Path=/api/stat/**
+          filters:
+            - StripPrefix=2
+        - id: otto-message
+          uri: lb://otto-message-service
+          predicates:
+            - Path=/api/message/**
+          filters:
+            - StripPrefix=2
+        - id: otto-search
+          uri: lb://otto-search-service
+          predicates:
+            - Path=/api/search/**
+          filters:
+            - StripPrefix=2
+        - id: otto-admin
+          uri: lb://otto-admin-service
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - StripPrefix=2
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      database: 0
+
+# 网关鉴权配置
+otto:
+  auth:
+    # 免登录白名单（Ant 风格，完整路径含 /api 前缀）
+    white-paths:
+      - /api/user/account/checkCode
+      - /api/user/account/sendEmailCode
+      - /api/user/account/register
+      - /api/user/account/login
+      - /api/user/user/getUserInfo
+      - /api/user/follow/loadFollows
+      - /api/user/follow/loadFans
+      - /api/video/partition/**
+      - /api/video/video/detail
+      - /api/video/video/loadRecommendVideo
+      - /api/video/video/loadVideoList
+      - /api/interact/danmaku/loadDanmaku
+      - /api/interact/comment/loadComment
+      - /api/stat/rank/**
+      - /api/search/**
+    # 管理员路径（要求 role=1）
+    admin-paths:
+      - /api/admin/**

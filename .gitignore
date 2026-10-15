@@ -1,0 +1,51 @@
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# ===== IDE: IntelliJ IDEA =====
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ===== IDE: Eclipse / STS =====
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# ===== VS Code =====
+.vscode/
+
+# ===== Trae 工具目录（保留计划文档） =====
+.trae/*
+!.trae/documents/
+
+# ===== Node / 前端 =====
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== 环境与密钥 =====
+.env
+.env.local
+*.pem
+*.key
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db

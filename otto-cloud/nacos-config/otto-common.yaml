@@ -1,0 +1,16 @@
+# ============================================================
+# Nacos 共享配置（dataId: otto-common.yaml, group: OTTO_GROUP）
+# 所有微服务共享的中间件连接信息，导入 Nacos 后使用
+# ============================================================
+spring:
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: otto
+    password: otto123456
+    virtual-host: /

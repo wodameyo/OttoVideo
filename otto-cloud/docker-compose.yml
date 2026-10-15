@@ -1,0 +1,130 @@
+name: otto-cloud
+
+services:
+  # ============ 注册中心 / 配置中心 ============
+  nacos:
+    image: nacos/nacos-server:v3.0.3
+    container_name: otto-nacos
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=false
+      - JVM_XMS=256m
+      - JVM_XMX=512m
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos_data:/home/nacos/data
+    restart: unless-stopped
+
+  # ============ MySQL 8（一服务一 schema，启动时自动执行 sql 目录脚本） ============
+  mysql:
+    image: mysql:8.0
+    container_name: otto-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --lower_case_table_names=1
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123456
+      - TZ=Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+  # ============ Redis（会话 / 验证码 / 计数 / 排行榜） ============
+  redis:
+    image: redis:7.2
+    container_name: otto-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # ============ RabbitMQ（转码 / 计数 / 通知 / 搜索同步） ============
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: otto-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=otto
+      - RABBITMQ_DEFAULT_PASS=otto123456
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  # ============ MinIO 对象存储 ============
+  minio:
+    image: minio/minio:RELEASE.2025-04-08T15-41-24Z
+    container_name: otto-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=otto
+      - MINIO_ROOT_PASSWORD=otto123456
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+
+  # 首次启动自动创建 bucket
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-08T15-39-49Z
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 otto otto123456;
+      mc mb --ignore-existing local/otto-video;
+      mc mb --ignore-existing local/otto-cover;
+      mc mb --ignore-existing local/otto-avatar;
+      mc anonymous set download local/otto-video;
+      mc anonymous set download local/otto-cover;
+      mc anonymous set download local/otto-avatar;
+      exit 0;
+      "
+
+  # ============ 进阶组件（默认不启动：--profile advanced 才启动） ============
+  elasticsearch:
+    image: elasticsearch:8.15.0
+    profiles: ["advanced"]
+    container_name: otto-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:8.15.0
+    profiles: ["advanced"]
+    container_name: otto-kibana
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+
+  sentinel-dashboard:
+    image: bladex/sentinel-dashboard:1.8.8
+    profiles: ["advanced"]
+    container_name: otto-sentinel
+    ports:
+      - "8858:8858"
+
+volumes:
+  nacos_data:
+  mysql_data:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
+  es_data:

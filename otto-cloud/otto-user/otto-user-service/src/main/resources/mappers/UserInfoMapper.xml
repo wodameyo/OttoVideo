@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.user.mappers.UserInfoMapper">
+
+    <resultMap id="userInfoMap" type="com.otto.user.entity.po.UserInfo">
+        <id property="userId" column="user_id"/>
+        <result property="email" column="email"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="password" column="password"/>
+        <result property="salt" column="salt"/>
+        <result property="sex" column="sex"/>
+        <result property="personalSign" column="personal_sign"/>
+        <result property="birthday" column="birthday"/>
+        <result property="role" column="role"/>
+        <result property="status" column="status"/>
+        <result property="integral" column="integral"/>
+        <result property="totalFollows" column="total_follows"/>
+        <result property="totalFans" column="total_fans"/>
+        <result property="totalLikes" column="total_likes"/>
+        <result property="createTime" column="create_time"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        user_id, email, nick_name, avatar, password, salt, sex, personal_sign, birthday,
+        role, status, integral, total_follows, total_fans, total_likes,
+        create_time, last_login_time, update_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.userId != null and query.userId != ''">and user_id = #{query.userId}</if>
+            <if test="query.userIdFuzzy != null and query.userIdFuzzy != ''">and user_id like concat('%', #{query.userIdFuzzy}, '%')</if>
+            <if test="query.email != null and query.email != ''">and email = #{query.email}</if>
+            <if test="query.emailFuzzy != null and query.emailFuzzy != ''">and email like concat('%', #{query.emailFuzzy}, '%')</if>
+            <if test="query.nickName != null and query.nickName != ''">and nick_name = #{query.nickName}</if>
+            <if test="query.nickNameFuzzy != null and query.nickNameFuzzy != ''">and nick_name like concat('%', #{query.nickNameFuzzy}, '%')</if>
+            <if test="query.sex != null">and sex = #{query.sex}</if>
+            <if test="query.role != null">and role = #{query.role}</if>
+            <if test="query.status != null">and status = #{query.status}</if>
+            <if test="query.createTimeStart != null and query.createTimeStart != ''">and create_time &gt;= #{query.createTimeStart}</if>
+            <if test="query.createTimeEnd != null and query.createTimeEnd != ''">and create_time &lt;= #{query.createTimeEnd}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="userInfoMap">
+        select <include refid="base_column"/> from user_info
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from user_info
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.user.entity.po.UserInfo">
+        insert into user_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="email != null">email,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="avatar != null">avatar,</if>
+            <if test="password != null">password,</if>
+            <if test="salt != null">salt,</if>
+            <if test="sex != null">sex,</if>
+            <if test="personalSign != null">personal_sign,</if>
+            <if test="birthday != null">birthday,</if>
+            <if test="role != null">role,</if>
+            <if test="status != null">status,</if>
+            <if test="integral != null">integral,</if>
+            <if test="totalFollows != null">total_follows,</if>
+            <if test="totalFans != null">total_fans,</if>
+            <if test="totalLikes != null">total_likes,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="lastLoginTime != null">last_login_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="email != null">#{email},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="avatar != null">#{avatar},</if>
+            <if test="password != null">#{password},</if>
+            <if test="salt != null">#{salt},</if>
+            <if test="sex != null">#{sex},</if>
+            <if test="personalSign != null">#{personalSign},</if>
+            <if test="birthday != null">#{birthday},</if>
+            <if test="role != null">#{role},</if>
+            <if test="status != null">#{status},</if>
+            <if test="integral != null">#{integral},</if>
+            <if test="totalFollows != null">#{totalFollows},</if>
+            <if test="totalFans != null">#{totalFans},</if>
+            <if test="totalLikes != null">#{totalLikes},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="lastLoginTime != null">#{lastLoginTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.user.entity.po.UserInfo">
+        insert into user_info (user_id, email, nick_name, avatar, password, salt, sex, personal_sign,
+            birthday, role, status, integral, total_follows, total_fans, total_likes, create_time, last_login_time)
+        values (#{userId}, #{email}, #{nickName}, #{avatar}, #{password}, #{salt}, #{sex}, #{personalSign},
+            #{birthday}, #{role}, #{status}, #{integral}, #{totalFollows}, #{totalFans}, #{totalLikes}, #{createTime}, #{lastLoginTime})
+        on duplicate key update
+            nick_name = values(nick_name), avatar = values(avatar), password = values(password), salt = values(salt),
+            sex = values(sex), personal_sign = values(personal_sign), birthday = values(birthday),
+            role = values(role), status = values(status), integral = values(integral),
+            total_follows = values(total_follows), total_fans = values(total_fans), total_likes = values(total_likes),
+            last_login_time = values(last_login_time)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into user_info (user_id, email, nick_name, avatar, status, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.email}, #{item.nickName}, #{item.avatar}, #{item.status}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into user_info (user_id, email, nick_name, avatar, password, status, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.email}, #{item.nickName}, #{item.avatar}, #{item.password}, #{item.status}, #{item.createTime})
+        </foreach>
+        on duplicate key update nick_name = values(nick_name), avatar = values(avatar)
+    </insert>
+
+    <update id="updateByParam">
+        update user_info
+        <set>
+            <if test="bean.email != null">email = #{bean.email},</if>
+            <if test="bean.nickName != null">nick_name = #{bean.nickName},</if>
+            <if test="bean.avatar != null">avatar = #{bean.avatar},</if>
+            <if test="bean.password != null">password = #{bean.password},</if>
+            <if test="bean.salt != null">salt = #{bean.salt},</if>
+            <if test="bean.sex != null">sex = #{bean.sex},</if>
+            <if test="bean.personalSign != null">personal_sign = #{bean.personalSign},</if>
+            <if test="bean.birthday != null">birthday = #{bean.birthday},</if>
+            <if test="bean.role != null">role = #{bean.role},</if>
+            <if test="bean.status != null">status = #{bean.status},</if>
+            <if test="bean.integral != null">integral = #{bean.integral},</if>
+            <if test="bean.lastLoginTime != null">last_login_time = #{bean.lastLoginTime},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from user_info
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectListByUserIds" resultMap="userInfoMap">
+        select <include refid="base_column"/> from user_info
+        where user_id in
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </select>
+
+    <update id="updateCount">
+        update user_info
+        set ${field} = ${field} + #{delta}
+        where user_id = #{userId} and ${field} + #{delta} &gt;= 0
+    </update>
+
+</mapper>
