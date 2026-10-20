@@ -14,6 +14,10 @@ public interface Constants {
     String REDIS_KEY_RANK_PLAY = "otto:rank:play:";
     String REDIS_KEY_USER_INFO = "otto:user:info:";
     String REDIS_KEY_VIDEO_DETAIL = "otto:video:detail:";
+    String REDIS_KEY_PARTITION_TREE = "otto:partition:tree";
+    String REDIS_KEY_UPLOAD_SESSION = "otto:upload:session:";
+    String REDIS_KEY_UPLOAD_HASH = "otto:upload:hash:";
+    String REDIS_KEY_TRANSCODE_TASK = "otto:transcode:task:";
 
     // ============ 过期时间（秒） ============
     long REDIS_KEY_EXPIRES_ONE_MIN = 60L;

@@ -1,0 +1,53 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: otto-media-service
+  config:
+    import:
+      - optional:nacos:otto-common.yaml?group=OTTO_GROUP&refreshEnabled=true
+      - optional:nacos:otto-media-service.yaml?group=OTTO_GROUP&refreshEnabled=true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        group: OTTO_GROUP
+        file-extension: yaml
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      database: 0
+  rabbitmq:
+    host: ${RABBITMQ_HOST:127.0.0.1}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:otto}
+    password: ${RABBITMQ_PASSWORD:otto123456}
+    virtual-host: ${RABBITMQ_VHOST:/}
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+otto:
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+    access-key: ${MINIO_ACCESS_KEY:otto}
+    secret-key: ${MINIO_SECRET_KEY:otto123456}
+    public-url: ${MINIO_PUBLIC_URL:http://127.0.0.1:9000}
+    video-bucket: otto-video
+    cover-bucket: otto-cover
+  ffmpeg:
+    # Windows 可配置为绝对路径，如 C:/ffmpeg/bin/ffmpeg.exe
+    path: ${FFMPEG_PATH:ffmpeg}
+  upload:
+    temp-dir: ${UPLOAD_TEMP_DIR:${java.io.tmpdir}/otto-upload}
+    chunk-size: 5242880
+    max-file-size: 2147483648
+
+logging:
+  level:
+    com.otto: debug

@@ -23,6 +23,8 @@
         <module>otto-common</module>
         <module>otto-gateway</module>
         <module>otto-user</module>
+        <module>otto-video</module>
+        <module>otto-media</module>
     </modules>
 
     <properties>
@@ -71,6 +73,11 @@
             <dependency>
                 <groupId>com.otto</groupId>
                 <artifactId>otto-user-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.otto</groupId>
+                <artifactId>otto-video-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
