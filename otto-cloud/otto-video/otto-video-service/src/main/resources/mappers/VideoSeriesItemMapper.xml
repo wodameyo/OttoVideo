@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoSeriesItemMapper">
+
+    <resultMap id="videoSeriesItemMap" type="com.otto.video.entity.po.VideoSeriesItem">
+        <id property="id" column="id"/>
+        <result property="seriesId" column="series_id"/>
+        <result property="videoId" column="video_id"/>
+        <result property="sort" column="sort"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        id, series_id, video_id, sort, create_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.id != null">and id = #{query.id}</if>
+            <if test="query.seriesId != null and query.seriesId != ''">and series_id = #{query.seriesId}</if>
+            <if test="query.videoId != null and query.videoId != ''">and video_id = #{query.videoId}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoSeriesItemMap">
+        select <include refid="base_column"/> from video_series_item
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_series_item
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoSeriesItem">
+        insert into video_series_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">id,</if>
+            <if test="bean.seriesId != null">series_id,</if>
+            <if test="bean.videoId != null">video_id,</if>
+            <if test="bean.sort != null">sort,</if>
+            <if test="bean.createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">#{bean.id},</if>
+            <if test="bean.seriesId != null">#{bean.seriesId},</if>
+            <if test="bean.videoId != null">#{bean.videoId},</if>
+            <if test="bean.sort != null">#{bean.sort},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoSeriesItem">
+        insert into video_series_item (id, series_id, video_id, sort, create_time)
+        values (#{bean.id}, #{bean.seriesId}, #{bean.videoId}, coalesce(#{bean.sort}, 0),
+                coalesce(#{bean.createTime}, now()))
+        on duplicate key update sort = values(sort)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_series_item (series_id, video_id, sort, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.seriesId}, #{item.videoId}, coalesce(#{item.sort}, 0), coalesce(#{item.createTime}, now()))
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_series_item (id, series_id, video_id, sort, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.seriesId}, #{item.videoId}, coalesce(#{item.sort}, 0),
+             coalesce(#{item.createTime}, now()))
+        </foreach>
+        on duplicate key update sort = values(sort)
+    </insert>
+
+    <update id="updateByParam">
+        update video_series_item
+        <set>
+            <if test="bean.seriesId != null">series_id = #{bean.seriesId},</if>
+            <if test="bean.videoId != null">video_id = #{bean.videoId},</if>
+            <if test="bean.sort != null">sort = #{bean.sort},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_series_item
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectListBySeriesId" resultMap="videoSeriesItemMap">
+        select <include refid="base_column"/> from video_series_item
+        where series_id = #{seriesId}
+        order by sort asc, id asc
+    </select>
+
+    <select id="selectMaxSort" resultType="java.lang.Integer">
+        select coalesce(max(sort), 0) from video_series_item where series_id = #{seriesId}
+    </select>
+
+</mapper>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoInfoMapper">
+
+    <resultMap id="videoInfoMap" type="com.otto.video.entity.po.VideoInfo">
+        <id property="videoId" column="video_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="partitionId" column="partition_id"/>
+        <result property="title" column="title"/>
+        <result property="cover" column="cover"/>
+        <result property="introduction" column="introduction"/>
+        <result property="tags" column="tags"/>
+        <result property="status" column="status"/>
+        <result property="rejectReason" column="reject_reason"/>
+        <result property="duration" column="duration"/>
+        <result property="createTime" column="create_time"/>
+        <result property="publishTime" column="publish_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        video_id, user_id, partition_id, title, cover, introduction, tags, status,
+        reject_reason, duration, create_time, publish_time, update_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.videoId != null and query.videoId != ''">and video_id = #{query.videoId}</if>
+            <if test="query.userId != null and query.userId != ''">and user_id = #{query.userId}</if>
+            <if test="query.partitionId != null">and partition_id = #{query.partitionId}</if>
+            <if test="query.partitionIds != null and query.partitionIds.size() > 0">
+                and partition_id in
+                <foreach collection="query.partitionIds" item="pid" open="(" separator="," close=")">
+                    #{pid}
+                </foreach>
+            </if>
+            <if test="query.title != null and query.title != ''">and title = #{query.title}</if>
+            <if test="query.titleFuzzy != null and query.titleFuzzy != ''">and title like concat('%', #{query.titleFuzzy}, '%')</if>
+            <if test="query.keyword != null and query.keyword != ''">
+                and (title like concat('%', #{query.keyword}, '%') or tags like concat('%', #{query.keyword}, '%'))
+            </if>
+            <if test="query.tagsFuzzy != null and query.tagsFuzzy != ''">and tags like concat('%', #{query.tagsFuzzy}, '%')</if>
+            <if test="query.status != null">and status = #{query.status}</if>
+            <if test="query.statusList != null and query.statusList.size() > 0">
+                and status in
+                <foreach collection="query.statusList" item="st" open="(" separator="," close=")">
+                    #{st}
+                </foreach>
+            </if>
+            <if test="query.createTimeStart != null and query.createTimeStart != ''">and create_time &gt;= #{query.createTimeStart}</if>
+            <if test="query.createTimeEnd != null and query.createTimeEnd != ''">and create_time &lt;= #{query.createTimeEnd}</if>
+            <if test="query.publishTimeStart != null and query.publishTimeStart != ''">and publish_time &gt;= #{query.publishTimeStart}</if>
+            <if test="query.publishTimeEnd != null and query.publishTimeEnd != ''">and publish_time &lt;= #{query.publishTimeEnd}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoInfoMap">
+        select <include refid="base_column"/> from video_info
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_info
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoInfo">
+        insert into video_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null">video_id,</if>
+            <if test="bean.userId != null">user_id,</if>
+            <if test="bean.partitionId != null">partition_id,</if>
+            <if test="bean.title != null">title,</if>
+            <if test="bean.cover != null">cover,</if>
+            <if test="bean.introduction != null">introduction,</if>
+            <if test="bean.tags != null">tags,</if>
+            <if test="bean.status != null">status,</if>
+            <if test="bean.rejectReason != null">reject_reason,</if>
+            <if test="bean.duration != null">duration,</if>
+            <if test="bean.createTime != null">create_time,</if>
+            <if test="bean.publishTime != null">publish_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null">#{bean.videoId},</if>
+            <if test="bean.userId != null">#{bean.userId},</if>
+            <if test="bean.partitionId != null">#{bean.partitionId},</if>
+            <if test="bean.title != null">#{bean.title},</if>
+            <if test="bean.cover != null">#{bean.cover},</if>
+            <if test="bean.introduction != null">#{bean.introduction},</if>
+            <if test="bean.tags != null">#{bean.tags},</if>
+            <if test="bean.status != null">#{bean.status},</if>
+            <if test="bean.rejectReason != null">#{bean.rejectReason},</if>
+            <if test="bean.duration != null">#{bean.duration},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+            <if test="bean.publishTime != null">#{bean.publishTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoInfo">
+        insert into video_info (video_id, user_id, partition_id, title, cover, introduction, tags,
+            status, reject_reason, duration, create_time, publish_time)
+        values (#{bean.videoId}, #{bean.userId}, #{bean.partitionId}, #{bean.title}, #{bean.cover},
+            #{bean.introduction}, #{bean.tags}, #{bean.status}, #{bean.rejectReason}, #{bean.duration},
+            coalesce(#{bean.createTime}, now()), #{bean.publishTime})
+        on duplicate key update
+            user_id = values(user_id), partition_id = values(partition_id), title = values(title),
+            cover = values(cover), introduction = values(introduction), tags = values(tags),
+            status = values(status), reject_reason = values(reject_reason), duration = values(duration),
+            publish_time = values(publish_time)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_info (video_id, user_id, partition_id, title, cover, introduction, tags,
+            status, reject_reason, duration, create_time, publish_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.videoId}, #{item.userId}, #{item.partitionId}, #{item.title}, #{item.cover},
+             #{item.introduction}, #{item.tags}, #{item.status}, #{item.rejectReason}, #{item.duration},
+             coalesce(#{item.createTime}, now()), #{item.publishTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_info (video_id, user_id, partition_id, title, cover, introduction, tags,
+            status, reject_reason, duration, create_time, publish_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.videoId}, #{item.userId}, #{item.partitionId}, #{item.title}, #{item.cover},
+             #{item.introduction}, #{item.tags}, #{item.status}, #{item.rejectReason}, #{item.duration},
+             coalesce(#{item.createTime}, now()), #{item.publishTime})
+        </foreach>
+        on duplicate key update
+            user_id = values(user_id), partition_id = values(partition_id), title = values(title),
+            cover = values(cover), introduction = values(introduction), tags = values(tags),
+            status = values(status), reject_reason = values(reject_reason), duration = values(duration),
+            publish_time = values(publish_time)
+    </insert>
+
+    <update id="updateByParam">
+        update video_info
+        <set>
+            <if test="bean.userId != null">user_id = #{bean.userId},</if>
+            <if test="bean.partitionId != null">partition_id = #{bean.partitionId},</if>
+            <if test="bean.title != null">title = #{bean.title},</if>
+            <if test="bean.cover != null">cover = #{bean.cover},</if>
+            <if test="bean.introduction != null">introduction = #{bean.introduction},</if>
+            <if test="bean.tags != null">tags = #{bean.tags},</if>
+            <if test="bean.status != null">status = #{bean.status},</if>
+            <if test="bean.rejectReason != null">reject_reason = #{bean.rejectReason},</if>
+            <if test="bean.duration != null">duration = #{bean.duration},</if>
+            <if test="bean.publishTime != null">publish_time = #{bean.publishTime},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_info
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectListByVideoIds" resultMap="videoInfoMap">
+        select <include refid="base_column"/> from video_info
+        where video_id in
+        <foreach collection="videoIds" item="videoId" open="(" separator="," close=")">
+            #{videoId}
+        </foreach>
+    </select>
+
+</mapper>

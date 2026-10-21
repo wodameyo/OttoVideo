@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoAuditLogMapper">
+
+    <resultMap id="videoAuditLogMap" type="com.otto.video.entity.po.VideoAuditLog">
+        <id property="id" column="id"/>
+        <result property="videoId" column="video_id"/>
+        <result property="auditorId" column="auditor_id"/>
+        <result property="status" column="status"/>
+        <result property="opinion" column="opinion"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        id, video_id, auditor_id, status, opinion, create_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.id != null">and id = #{query.id}</if>
+            <if test="query.videoId != null and query.videoId != ''">and video_id = #{query.videoId}</if>
+            <if test="query.auditorId != null and query.auditorId != ''">and auditor_id = #{query.auditorId}</if>
+            <if test="query.status != null">and status = #{query.status}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoAuditLogMap">
+        select <include refid="base_column"/> from video_audit_log
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_audit_log
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoAuditLog">
+        insert into video_audit_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">id,</if>
+            <if test="bean.videoId != null">video_id,</if>
+            <if test="bean.auditorId != null">auditor_id,</if>
+            <if test="bean.status != null">status,</if>
+            <if test="bean.opinion != null">opinion,</if>
+            <if test="bean.createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">#{bean.id},</if>
+            <if test="bean.videoId != null">#{bean.videoId},</if>
+            <if test="bean.auditorId != null">#{bean.auditorId},</if>
+            <if test="bean.status != null">#{bean.status},</if>
+            <if test="bean.opinion != null">#{bean.opinion},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoAuditLog">
+        insert into video_audit_log (id, video_id, auditor_id, status, opinion, create_time)
+        values (#{bean.id}, #{bean.videoId}, #{bean.auditorId}, #{bean.status}, #{bean.opinion},
+                coalesce(#{bean.createTime}, now()))
+        on duplicate key update
+            video_id = values(video_id), auditor_id = values(auditor_id),
+            status = values(status), opinion = values(opinion)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_audit_log (video_id, auditor_id, status, opinion, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.videoId}, #{item.auditorId}, #{item.status}, #{item.opinion},
+             coalesce(#{item.createTime}, now()))
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_audit_log (id, video_id, auditor_id, status, opinion, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.videoId}, #{item.auditorId}, #{item.status}, #{item.opinion},
+             coalesce(#{item.createTime}, now()))
+        </foreach>
+        on duplicate key update
+            video_id = values(video_id), auditor_id = values(auditor_id),
+            status = values(status), opinion = values(opinion)
+    </insert>
+
+    <update id="updateByParam">
+        update video_audit_log
+        <set>
+            <if test="bean.videoId != null">video_id = #{bean.videoId},</if>
+            <if test="bean.auditorId != null">auditor_id = #{bean.auditorId},</if>
+            <if test="bean.status != null">status = #{bean.status},</if>
+            <if test="bean.opinion != null">opinion = #{bean.opinion},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_audit_log
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectLatestByVideoId" resultMap="videoAuditLogMap">
+        select <include refid="base_column"/> from video_audit_log
+        where video_id = #{videoId}
+        order by id desc
+        limit 1
+    </select>
+
+</mapper>

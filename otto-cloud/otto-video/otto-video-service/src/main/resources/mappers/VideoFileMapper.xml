@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoFileMapper">
+
+    <resultMap id="videoFileMap" type="com.otto.video.entity.po.VideoFile">
+        <id property="fileId" column="file_id"/>
+        <result property="videoId" column="video_id"/>
+        <result property="fileIndex" column="file_index"/>
+        <result property="title" column="title"/>
+        <result property="duration" column="duration"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="resolution" column="resolution"/>
+        <result property="originPath" column="origin_path"/>
+        <result property="hlsPath" column="hls_path"/>
+        <result property="coverPath" column="cover_path"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        file_id, video_id, file_index, title, duration, file_size, resolution,
+        origin_path, hls_path, cover_path, status, create_time, update_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.fileId != null and query.fileId != ''">and file_id = #{query.fileId}</if>
+            <if test="query.videoId != null and query.videoId != ''">and video_id = #{query.videoId}</if>
+            <if test="query.fileIndex != null">and file_index = #{query.fileIndex}</if>
+            <if test="query.status != null">and status = #{query.status}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoFileMap">
+        select <include refid="base_column"/> from video_file
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_file
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoFile">
+        insert into video_file
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.fileId != null">file_id,</if>
+            <if test="bean.videoId != null">video_id,</if>
+            <if test="bean.fileIndex != null">file_index,</if>
+            <if test="bean.title != null">title,</if>
+            <if test="bean.duration != null">duration,</if>
+            <if test="bean.fileSize != null">file_size,</if>
+            <if test="bean.resolution != null">resolution,</if>
+            <if test="bean.originPath != null">origin_path,</if>
+            <if test="bean.hlsPath != null">hls_path,</if>
+            <if test="bean.coverPath != null">cover_path,</if>
+            <if test="bean.status != null">status,</if>
+            <if test="bean.createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.fileId != null">#{bean.fileId},</if>
+            <if test="bean.videoId != null">#{bean.videoId},</if>
+            <if test="bean.fileIndex != null">#{bean.fileIndex},</if>
+            <if test="bean.title != null">#{bean.title},</if>
+            <if test="bean.duration != null">#{bean.duration},</if>
+            <if test="bean.fileSize != null">#{bean.fileSize},</if>
+            <if test="bean.resolution != null">#{bean.resolution},</if>
+            <if test="bean.originPath != null">#{bean.originPath},</if>
+            <if test="bean.hlsPath != null">#{bean.hlsPath},</if>
+            <if test="bean.coverPath != null">#{bean.coverPath},</if>
+            <if test="bean.status != null">#{bean.status},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoFile">
+        insert into video_file (file_id, video_id, file_index, title, duration, file_size, resolution,
+            origin_path, hls_path, cover_path, status, create_time)
+        values (#{bean.fileId}, #{bean.videoId}, #{bean.fileIndex}, #{bean.title}, #{bean.duration},
+            #{bean.fileSize}, #{bean.resolution}, #{bean.originPath}, #{bean.hlsPath}, #{bean.coverPath},
+            #{bean.status}, coalesce(#{bean.createTime}, now()))
+        on duplicate key update
+            video_id = values(video_id), file_index = values(file_index), title = values(title),
+            duration = values(duration), file_size = values(file_size), resolution = values(resolution),
+            origin_path = values(origin_path), hls_path = values(hls_path), cover_path = values(cover_path),
+            status = values(status)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_file (file_id, video_id, file_index, title, duration, file_size, resolution,
+            origin_path, hls_path, cover_path, status, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.fileId}, #{item.videoId}, #{item.fileIndex}, #{item.title}, #{item.duration},
+             #{item.fileSize}, #{item.resolution}, #{item.originPath}, #{item.hlsPath}, #{item.coverPath},
+             #{item.status}, coalesce(#{item.createTime}, now()))
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_file (file_id, video_id, file_index, title, duration, file_size, resolution,
+            origin_path, hls_path, cover_path, status, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.fileId}, #{item.videoId}, #{item.fileIndex}, #{item.title}, #{item.duration},
+             #{item.fileSize}, #{item.resolution}, #{item.originPath}, #{item.hlsPath}, #{item.coverPath},
+             #{item.status}, coalesce(#{item.createTime}, now()))
+        </foreach>
+        on duplicate key update
+            video_id = values(video_id), file_index = values(file_index), title = values(title),
+            duration = values(duration), file_size = values(file_size), resolution = values(resolution),
+            origin_path = values(origin_path), hls_path = values(hls_path), cover_path = values(cover_path),
+            status = values(status)
+    </insert>
+
+    <update id="updateByParam">
+        update video_file
+        <set>
+            <if test="bean.videoId != null">video_id = #{bean.videoId},</if>
+            <if test="bean.fileIndex != null">file_index = #{bean.fileIndex},</if>
+            <if test="bean.title != null">title = #{bean.title},</if>
+            <if test="bean.duration != null">duration = #{bean.duration},</if>
+            <if test="bean.fileSize != null">file_size = #{bean.fileSize},</if>
+            <if test="bean.resolution != null">resolution = #{bean.resolution},</if>
+            <if test="bean.originPath != null">origin_path = #{bean.originPath},</if>
+            <if test="bean.hlsPath != null">hls_path = #{bean.hlsPath},</if>
+            <if test="bean.coverPath != null">cover_path = #{bean.coverPath},</if>
+            <if test="bean.status != null">status = #{bean.status},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_file
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectListByVideoId" resultMap="videoFileMap">
+        select <include refid="base_column"/> from video_file
+        where video_id = #{videoId}
+        order by file_index asc
+    </select>
+
+    <select id="selectListByVideoIds" resultMap="videoFileMap">
+        select <include refid="base_column"/> from video_file
+        where video_id in
+        <foreach collection="videoIds" item="videoId" open="(" separator="," close=")">
+            #{videoId}
+        </foreach>
+        order by video_id asc, file_index asc
+    </select>
+
+</mapper>

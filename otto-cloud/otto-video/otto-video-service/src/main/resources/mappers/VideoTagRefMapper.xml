@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoTagRefMapper">
+
+    <resultMap id="videoTagRefMap" type="com.otto.video.entity.po.VideoTagRef">
+        <id property="id" column="id"/>
+        <result property="videoId" column="video_id"/>
+        <result property="tagId" column="tag_id"/>
+    </resultMap>
+
+    <sql id="base_column">
+        id, video_id, tag_id
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.id != null">and id = #{query.id}</if>
+            <if test="query.videoId != null and query.videoId != ''">and video_id = #{query.videoId}</if>
+            <if test="query.tagId != null">and tag_id = #{query.tagId}</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoTagRefMap">
+        select <include refid="base_column"/> from video_tag_ref
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_tag_ref
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoTagRef">
+        insert into video_tag_ref
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">id,</if>
+            <if test="bean.videoId != null">video_id,</if>
+            <if test="bean.tagId != null">tag_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">#{bean.id},</if>
+            <if test="bean.videoId != null">#{bean.videoId},</if>
+            <if test="bean.tagId != null">#{bean.tagId},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoTagRef">
+        insert into video_tag_ref (id, video_id, tag_id)
+        values (#{bean.id}, #{bean.videoId}, #{bean.tagId})
+        on duplicate key update tag_id = values(tag_id)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_tag_ref (video_id, tag_id)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.videoId}, #{item.tagId})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_tag_ref (id, video_id, tag_id)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.videoId}, #{item.tagId})
+        </foreach>
+        on duplicate key update tag_id = values(tag_id)
+    </insert>
+
+    <update id="updateByParam">
+        update video_tag_ref
+        <set>
+            <if test="bean.videoId != null">video_id = #{bean.videoId},</if>
+            <if test="bean.tagId != null">tag_id = #{bean.tagId},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_tag_ref
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectTagIdListByVideoId" resultType="java.lang.Long">
+        select tag_id from video_tag_ref where video_id = #{videoId}
+    </select>
+
+    <delete id="deleteByVideoId">
+        delete from video_tag_ref where video_id = #{videoId}
+    </delete>
+
+</mapper>

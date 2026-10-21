@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoSeriesMapper">
+
+    <resultMap id="videoSeriesMap" type="com.otto.video.entity.po.VideoSeries">
+        <id property="seriesId" column="series_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="cover" column="cover"/>
+        <result property="videoCount" column="video_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        series_id, user_id, name, description, cover, video_count, create_time, update_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.seriesId != null and query.seriesId != ''">and series_id = #{query.seriesId}</if>
+            <if test="query.userId != null and query.userId != ''">and user_id = #{query.userId}</if>
+            <if test="query.name != null and query.name != ''">and name = #{query.name}</if>
+            <if test="query.nameFuzzy != null and query.nameFuzzy != ''">and name like concat('%', #{query.nameFuzzy}, '%')</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoSeriesMap">
+        select <include refid="base_column"/> from video_series
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_series
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoSeries">
+        insert into video_series
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.seriesId != null">series_id,</if>
+            <if test="bean.userId != null">user_id,</if>
+            <if test="bean.name != null">name,</if>
+            <if test="bean.description != null">description,</if>
+            <if test="bean.cover != null">cover,</if>
+            <if test="bean.videoCount != null">video_count,</if>
+            <if test="bean.createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.seriesId != null">#{bean.seriesId},</if>
+            <if test="bean.userId != null">#{bean.userId},</if>
+            <if test="bean.name != null">#{bean.name},</if>
+            <if test="bean.description != null">#{bean.description},</if>
+            <if test="bean.cover != null">#{bean.cover},</if>
+            <if test="bean.videoCount != null">#{bean.videoCount},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoSeries">
+        insert into video_series (series_id, user_id, name, description, cover, video_count, create_time)
+        values (#{bean.seriesId}, #{bean.userId}, #{bean.name}, #{bean.description}, #{bean.cover},
+                coalesce(#{bean.videoCount}, 0), coalesce(#{bean.createTime}, now()))
+        on duplicate key update
+            user_id = values(user_id), name = values(name), description = values(description),
+            cover = values(cover), video_count = values(video_count)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_series (series_id, user_id, name, description, cover, video_count, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.seriesId}, #{item.userId}, #{item.name}, #{item.description}, #{item.cover},
+             coalesce(#{item.videoCount}, 0), coalesce(#{item.createTime}, now()))
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_series (series_id, user_id, name, description, cover, video_count, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.seriesId}, #{item.userId}, #{item.name}, #{item.description}, #{item.cover},
+             coalesce(#{item.videoCount}, 0), coalesce(#{item.createTime}, now()))
+        </foreach>
+        on duplicate key update
+            user_id = values(user_id), name = values(name), description = values(description),
+            cover = values(cover), video_count = values(video_count)
+    </insert>
+
+    <update id="updateByParam">
+        update video_series
+        <set>
+            <if test="bean.userId != null">user_id = #{bean.userId},</if>
+            <if test="bean.name != null">name = #{bean.name},</if>
+            <if test="bean.description != null">description = #{bean.description},</if>
+            <if test="bean.cover != null">cover = #{bean.cover},</if>
+            <if test="bean.videoCount != null">video_count = #{bean.videoCount},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_series
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="updateVideoCount">
+        update video_series
+        set video_count = video_count + #{delta}
+        where series_id = #{seriesId} and video_count + #{delta} &gt;= 0
+    </update>
+
+</mapper>

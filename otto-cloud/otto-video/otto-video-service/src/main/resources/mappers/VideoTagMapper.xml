@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.otto.video.mappers.VideoTagMapper">
+
+    <resultMap id="videoTagMap" type="com.otto.video.entity.po.VideoTag">
+        <id property="tagId" column="tag_id"/>
+        <result property="tagName" column="tag_name"/>
+        <result property="useCount" column="use_count"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="base_column">
+        tag_id, tag_name, use_count, create_time
+    </sql>
+
+    <sql id="where_condition">
+        <where>
+            <if test="query.tagId != null">and tag_id = #{query.tagId}</if>
+            <if test="query.tagName != null and query.tagName != ''">and tag_name = #{query.tagName}</if>
+            <if test="query.tagNameFuzzy != null and query.tagNameFuzzy != ''">and tag_name like concat('%', #{query.tagNameFuzzy}, '%')</if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="videoTagMap">
+        select <include refid="base_column"/> from video_tag
+        <include refid="where_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">order by ${query.orderBy}</if>
+        <if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(1) from video_tag
+        <include refid="where_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoTag">
+        insert into video_tag
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.tagId != null">tag_id,</if>
+            <if test="bean.tagName != null">tag_name,</if>
+            <if test="bean.useCount != null">use_count,</if>
+            <if test="bean.createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.tagId != null">#{bean.tagId},</if>
+            <if test="bean.tagName != null">#{bean.tagName},</if>
+            <if test="bean.useCount != null">#{bean.useCount},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.otto.video.entity.po.VideoTag">
+        insert into video_tag (tag_id, tag_name, use_count, create_time)
+        values (#{bean.tagId}, #{bean.tagName}, coalesce(#{bean.useCount}, 0), coalesce(#{bean.createTime}, now()))
+        on duplicate key update
+            tag_name = values(tag_name), use_count = values(use_count)
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into video_tag (tag_name, use_count, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tagName}, coalesce(#{item.useCount}, 0), coalesce(#{item.createTime}, now()))
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into video_tag (tag_id, tag_name, use_count, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tagId}, #{item.tagName}, coalesce(#{item.useCount}, 0), coalesce(#{item.createTime}, now()))
+        </foreach>
+        on duplicate key update
+            tag_name = values(tag_name), use_count = values(use_count)
+    </insert>
+
+    <update id="updateByParam">
+        update video_tag
+        <set>
+            <if test="bean.tagName != null">tag_name = #{bean.tagName},</if>
+            <if test="bean.useCount != null">use_count = #{bean.useCount},</if>
+        </set>
+        <include refid="where_condition"/>
+    </update>
+
+    <update id="deleteByParam">
+        delete from video_tag
+        <include refid="where_condition"/>
+    </update>
+
+    <select id="selectListByNames" resultMap="videoTagMap">
+        select <include refid="base_column"/> from video_tag
+        where tag_name in
+        <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
+            #{tagName}
+        </foreach>
+    </select>
+
+    <update id="updateUseCount">
+        update video_tag
+        set use_count = use_count + #{delta}
+        where tag_id = #{tagId} and use_count + #{delta} &gt;= 0
+    </update>
+
+    <select id="selectHotTags" resultMap="videoTagMap">
+        select <include refid="base_column"/> from video_tag
+        where use_count &gt; 0
+        order by use_count desc, tag_id asc
+        limit #{limit}
+    </select>
+
+</mapper>
