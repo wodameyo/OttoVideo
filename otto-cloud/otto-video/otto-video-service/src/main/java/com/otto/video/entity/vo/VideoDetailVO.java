@@ -52,5 +52,11 @@ public class VideoDetailVO implements Serializable {
 
     private String seriesName;
 
+    /** 最近一次审核意见 */
+    private String auditOpinion;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date auditTime;
+
     private List<VideoFileVO> files;
 }

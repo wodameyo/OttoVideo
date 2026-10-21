@@ -34,7 +34,7 @@
         <include refid="where_condition"/>
     </select>
 
-    <insert id="insert" parameterType="com.otto.video.entity.po.VideoTag">
+    <insert id="insert" parameterType="com.otto.video.entity.po.VideoTag" useGeneratedKeys="true" keyProperty="tagId">
         insert into video_tag
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="bean.tagId != null">tag_id,</if>
@@ -94,6 +94,14 @@
         where tag_name in
         <foreach collection="tagNames" item="tagName" open="(" separator="," close=")">
             #{tagName}
+        </foreach>
+    </select>
+
+    <select id="selectListByTagIds" resultMap="videoTagMap">
+        select <include refid="base_column"/> from video_tag
+        where tag_id in
+        <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+            #{tagId}
         </foreach>
     </select>
 

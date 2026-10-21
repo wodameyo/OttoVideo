@@ -15,6 +15,11 @@ public interface VideoTagMapper extends BaseMapper<VideoTag, VideoTagQuery> {
     List<VideoTag> selectListByNames(@Param("tagNames") List<String> tagNames);
 
     /**
+     * 按标签 ID 集合批量查询
+     */
+    List<VideoTag> selectListByTagIds(@Param("tagIds") List<Long> tagIds);
+
+    /**
      * 引用次数增减，最低为 0
      */
     Integer updateUseCount(@Param("tagId") Long tagId, @Param("delta") Integer delta);

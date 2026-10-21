@@ -61,50 +61,51 @@
     <insert id="insert" parameterType="com.otto.user.entity.po.UserInfo">
         insert into user_info
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="userId != null">user_id,</if>
-            <if test="email != null">email,</if>
-            <if test="nickName != null">nick_name,</if>
-            <if test="avatar != null">avatar,</if>
-            <if test="password != null">password,</if>
-            <if test="salt != null">salt,</if>
-            <if test="sex != null">sex,</if>
-            <if test="personalSign != null">personal_sign,</if>
-            <if test="birthday != null">birthday,</if>
-            <if test="role != null">role,</if>
-            <if test="status != null">status,</if>
-            <if test="integral != null">integral,</if>
-            <if test="totalFollows != null">total_follows,</if>
-            <if test="totalFans != null">total_fans,</if>
-            <if test="totalLikes != null">total_likes,</if>
-            <if test="createTime != null">create_time,</if>
-            <if test="lastLoginTime != null">last_login_time,</if>
+            <if test="bean.userId != null">user_id,</if>
+            <if test="bean.email != null">email,</if>
+            <if test="bean.nickName != null">nick_name,</if>
+            <if test="bean.avatar != null">avatar,</if>
+            <if test="bean.password != null">password,</if>
+            <if test="bean.salt != null">salt,</if>
+            <if test="bean.sex != null">sex,</if>
+            <if test="bean.personalSign != null">personal_sign,</if>
+            <if test="bean.birthday != null">birthday,</if>
+            <if test="bean.role != null">role,</if>
+            <if test="bean.status != null">status,</if>
+            <if test="bean.integral != null">integral,</if>
+            <if test="bean.totalFollows != null">total_follows,</if>
+            <if test="bean.totalFans != null">total_fans,</if>
+            <if test="bean.totalLikes != null">total_likes,</if>
+            <if test="bean.createTime != null">create_time,</if>
+            <if test="bean.lastLoginTime != null">last_login_time,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="userId != null">#{userId},</if>
-            <if test="email != null">#{email},</if>
-            <if test="nickName != null">#{nickName},</if>
-            <if test="avatar != null">#{avatar},</if>
-            <if test="password != null">#{password},</if>
-            <if test="salt != null">#{salt},</if>
-            <if test="sex != null">#{sex},</if>
-            <if test="personalSign != null">#{personalSign},</if>
-            <if test="birthday != null">#{birthday},</if>
-            <if test="role != null">#{role},</if>
-            <if test="status != null">#{status},</if>
-            <if test="integral != null">#{integral},</if>
-            <if test="totalFollows != null">#{totalFollows},</if>
-            <if test="totalFans != null">#{totalFans},</if>
-            <if test="totalLikes != null">#{totalLikes},</if>
-            <if test="createTime != null">#{createTime},</if>
-            <if test="lastLoginTime != null">#{lastLoginTime},</if>
+            <if test="bean.userId != null">#{bean.userId},</if>
+            <if test="bean.email != null">#{bean.email},</if>
+            <if test="bean.nickName != null">#{bean.nickName},</if>
+            <if test="bean.avatar != null">#{bean.avatar},</if>
+            <if test="bean.password != null">#{bean.password},</if>
+            <if test="bean.salt != null">#{bean.salt},</if>
+            <if test="bean.sex != null">#{bean.sex},</if>
+            <if test="bean.personalSign != null">#{bean.personalSign},</if>
+            <if test="bean.birthday != null">#{bean.birthday},</if>
+            <if test="bean.role != null">#{bean.role},</if>
+            <if test="bean.status != null">#{bean.status},</if>
+            <if test="bean.integral != null">#{bean.integral},</if>
+            <if test="bean.totalFollows != null">#{bean.totalFollows},</if>
+            <if test="bean.totalFans != null">#{bean.totalFans},</if>
+            <if test="bean.totalLikes != null">#{bean.totalLikes},</if>
+            <if test="bean.createTime != null">#{bean.createTime},</if>
+            <if test="bean.lastLoginTime != null">#{bean.lastLoginTime},</if>
         </trim>
     </insert>
 
     <insert id="insertOrUpdate" parameterType="com.otto.user.entity.po.UserInfo">
         insert into user_info (user_id, email, nick_name, avatar, password, salt, sex, personal_sign,
             birthday, role, status, integral, total_follows, total_fans, total_likes, create_time, last_login_time)
-        values (#{userId}, #{email}, #{nickName}, #{avatar}, #{password}, #{salt}, #{sex}, #{personalSign},
-            #{birthday}, #{role}, #{status}, #{integral}, #{totalFollows}, #{totalFans}, #{totalLikes}, #{createTime}, #{lastLoginTime})
+        values (#{bean.userId}, #{bean.email}, #{bean.nickName}, #{bean.avatar}, #{bean.password}, #{bean.salt},
+            #{bean.sex}, #{bean.personalSign}, #{bean.birthday}, #{bean.role}, #{bean.status}, #{bean.integral},
+            #{bean.totalFollows}, #{bean.totalFans}, #{bean.totalLikes}, #{bean.createTime}, #{bean.lastLoginTime})
         on duplicate key update
             nick_name = values(nick_name), avatar = values(avatar), password = values(password), salt = values(salt),
             sex = values(sex), personal_sign = values(personal_sign), birthday = values(birthday),
