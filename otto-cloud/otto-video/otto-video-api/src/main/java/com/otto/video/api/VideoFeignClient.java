@@ -55,4 +55,10 @@ public interface VideoFeignClient {
      */
     @PostMapping("/audit")
     ResponseVO<Object> audit(@RequestBody VideoAuditParamDTO param);
+
+    /**
+     * 下架已发布稿件（管理后台）
+     */
+    @PostMapping("/offline")
+    ResponseVO<Object> offline(@RequestParam("videoId") String videoId);
 }

@@ -52,6 +52,11 @@ public class VideoClientFallbackFactory implements FallbackFactory<VideoFeignCli
             public ResponseVO<Object> audit(VideoAuditParamDTO param) {
                 return error(null);
             }
+
+            @Override
+            public ResponseVO<Object> offline(String videoId) {
+                return error(null);
+            }
         };
     }
 
