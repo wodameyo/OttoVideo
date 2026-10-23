@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.otto.video.api")
-@SpringBootApplication(scanBasePackages = {"com.otto.common", "com.otto.media"})
+@SpringBootApplication(scanBasePackages = {"com.otto.common", "com.otto.video.api", "com.otto.media"})
 public class OttoMediaApplication {
 
     public static void main(String[] args) {

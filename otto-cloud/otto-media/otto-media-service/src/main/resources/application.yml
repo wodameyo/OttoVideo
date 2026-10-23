@@ -47,6 +47,8 @@ otto:
     temp-dir: ${UPLOAD_TEMP_DIR:${java.io.tmpdir}/otto-upload}
     chunk-size: 5242880
     max-file-size: 2147483648
+    allowed-extensions: mp4,flv,mkv,mov
+    temp-expire-hours: 24
 
 logging:
   level:
