@@ -43,6 +43,16 @@ otto:
   ffmpeg:
     # Windows 可配置为绝对路径，如 C:/ffmpeg/bin/ffmpeg.exe
     path: ${FFMPEG_PATH:ffmpeg}
+    # 留空则按 ffmpeg 所在目录推导
+    ffprobe-path: ${FFPROBE_PATH:}
+    timeout-seconds: 3600
+  transcode:
+    work-dir: ${TRANSCODE_WORK_DIR:${java.io.tmpdir}/otto-transcode}
+    core-size: 2
+    max-size: 4
+    queue-capacity: 50
+    keep-origin: false
+    task-expire-days: 7
   upload:
     temp-dir: ${UPLOAD_TEMP_DIR:${java.io.tmpdir}/otto-upload}
     chunk-size: 5242880

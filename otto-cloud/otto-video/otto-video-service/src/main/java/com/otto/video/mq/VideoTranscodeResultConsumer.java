@@ -49,8 +49,9 @@ public class VideoTranscodeResultConsumer {
             logger.warn("转码结果对应的分P不存在, fileId={}", message.getFileId());
             return;
         }
-        if (!VideoFileStatusEnum.TRANSCODING.getStatus().equals(file.getStatus())) {
-            // 幂等：已处理过的结果直接忽略
+        if (!VideoFileStatusEnum.TRANSCODING.getStatus().equals(file.getStatus())
+                && !VideoFileStatusEnum.FAILED.getStatus().equals(file.getStatus())) {
+            // 幂等：已成功处理过的结果直接忽略；转码失败的分P允许重新上传后再次回写
             logger.info("分P转码结果重复, fileId={}, status={}", file.getFileId(), file.getStatus());
             return;
         }

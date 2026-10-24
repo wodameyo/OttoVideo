@@ -74,6 +74,11 @@ public class UploadServiceImpl implements UploadService {
      */
     private static final int FILE_STATUS_TRANSCODING = 0;
 
+    /**
+     * 分P状态：2 转码失败（允许重新上传）
+     */
+    private static final int FILE_STATUS_TRANSCODE_FAILED = 2;
+
     @Resource
     private UploadProperties uploadProperties;
 
@@ -124,7 +129,8 @@ public class UploadServiceImpl implements UploadService {
         if (!dto.getVideoId().equals(videoFile.getVideoId())) {
             throw new BusinessException(ResponseCodeEnum.CODE_403);
         }
-        if (!Integer.valueOf(FILE_STATUS_TRANSCODING).equals(videoFile.getStatus())) {
+        if (!Integer.valueOf(FILE_STATUS_TRANSCODING).equals(videoFile.getStatus())
+                && !Integer.valueOf(FILE_STATUS_TRANSCODE_FAILED).equals(videoFile.getStatus())) {
             throw new BusinessException("该分P已上传，请勿重复上传");
         }
         VideoBaseInfoDTO video = requireData(videoFeignClient.getById(dto.getVideoId()), "稿件不存在");
@@ -237,6 +243,8 @@ public class UploadServiceImpl implements UploadService {
             String objectName = buildOriginObjectName(session.getFileId(), ext);
             storageService.uploadFile(minioProperties.getVideoBucket(), objectName, merged, contentType(ext));
 
+            // 重新上传时清除旧的转码幂等标记，允许失败后重试
+            redisUtils.delete(Constants.REDIS_KEY_TRANSCODE_TASK + session.getFileId());
             publishTranscode(session, objectName, actualSize);
 
             session.setStatus(UploadStatusEnum.COMPLETED.getCode());
